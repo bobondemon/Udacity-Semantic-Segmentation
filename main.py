@@ -112,58 +112,8 @@ def load_vgg(sess, vgg_path):
     l7out = graph.get_tensor_by_name(vgg_layer7_out_tensor_name)
     
     return img_in, keep, l3out, l4out, l7out
-#tests.test_load_vgg(load_vgg, tf)
+tests.test_load_vgg(load_vgg, tf)
 
-## With dense decoder layers
-#def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
-#    """
-#    Create the layers for a fully convolutional network.  Build skip-layers using the vgg layers.
-#    :param vgg_layer3_out: TF Tensor for VGG Layer 3 output, (?, 20, 72, 256)
-#    :param vgg_layer4_out: TF Tensor for VGG Layer 4 output, (?, 10, 36, 512)
-#    :param vgg_layer7_out: TF Tensor for VGG Layer 7 output, (?, 5, 18, 4096)
-#    :param num_classes: Number of classes to classify
-#    :return: The Tensor for the last layer of output
-#    """
-#    # TODO: Implement function
-#    # Check here for the shape of the vgg_layer7_out, some other students said VGG is already fully CNN
-##    conv_1x1 = vgg_layer7_out  # The original VGG has done 1x1 conv
-#    # conv_1x1: (?, 5, 18, 1024)
-#    conv_1x1 = tf.layers.conv2d(vgg_layer7_out, 1024, 1, padding='same', activation=tf.nn.relu,
-#                                kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
-#    # input, out-dim, kernel_size, strides, padding,
-#    # output will have 2 times of size comparing to input
-#    # output: (?, 10, 36, 512)
-#    output = tf.layers.conv2d_transpose(conv_1x1, 512, 4, 2, padding='same', activation=tf.nn.relu,
-#                                kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
-#    print('output has shape=',output.shape,', while vgg_layer4_out has shape',vgg_layer4_out.shape)
-#    # skip Connections
-#    vgg_layer4_out_scaled = tf.multiply(vgg_layer4_out, 0.01, name='vgg_layer4_out_scaled')
-#    output = tf.add(output,vgg_layer4_out_scaled)
-#    
-#    # input, out-dim, kernel_size, strides, padding,
-#    # output will have 2 times of size comparing to input
-#    output = tf.layers.conv2d_transpose(output, 256, 4, 2, padding='same', activation=tf.nn.relu,
-#                                kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
-#    print('output has shape=',output.shape,', while vgg_layer3_out has shape',vgg_layer3_out.shape)
-#    # skip Connections
-#    vgg_layer4_out_scaled2 = tf.layers.conv2d_transpose(vgg_layer4_out_scaled, 256, 4, 2, padding='same', activation=tf.nn.relu,
-#                                kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
-#    vgg_layer3_out_scaled = tf.multiply(vgg_layer3_out, 0.0001, name='vgg_layer3_out_scaled')
-#    output = tf.add(output,tf.add(vgg_layer3_out_scaled,vgg_layer4_out_scaled2))
-#    
-#    # input, out-dim, kernel_size, strides, padding,
-#    # output will have 8 times of size comparing to input
-#    # this layer of output tensor should suppose to have same shape with original input image
-#    output = tf.layers.conv2d_transpose(output, num_classes, 16, 8, padding='same', activation=tf.nn.relu,
-#                                kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
-#    vgg_layer4_out_scaled3 = tf.layers.conv2d_transpose(vgg_layer4_out_scaled2, num_classes, 16, 8, padding='same', activation=tf.nn.relu,
-#                                kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
-#    vgg_layer3_out_scaled2 = tf.layers.conv2d_transpose(vgg_layer3_out_scaled, num_classes, 16, 8, padding='same', activation=tf.nn.relu,
-#                                kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
-#    output = tf.add(output,tf.add(vgg_layer3_out_scaled2,vgg_layer4_out_scaled3))
-#    print('final output has shape=',output.shape)
-#    
-#    return output
 
 def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
     """
@@ -208,43 +158,8 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
                                         activation=tf.nn.relu, kernel_initializer=tf.truncated_normal_initializer(stddev=0.01),
                                         kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
     return output
-#tests.test_layers(layers)
+tests.test_layers(layers)
 
-## ========== [DEBUG]
-## Check the value of label
-#image_shape = (160, 576)
-##batch_size = 100  # we have only 289 training images
-#data_dir = './data'
-#get_batches_fn = helper.gen_batch_function(os.path.join(data_dir, 'data_road/training'), image_shape)
-#for itr in range(1):
-#    for img,label_mask in get_batches_fn(2):
-#        # if we set batch_size = 100, then for one epoch, we'll get:
-#        # img.shape= (100, 160, 576, 3) ; label.shape= (100, 160, 576, 2)
-#        # img.shape= (100, 160, 576, 3) ; label.shape= (100, 160, 576, 2)
-#        # img.shape= (89, 160, 576, 3) ; label.shape= (89, 160, 576, 2)
-#        print('img.shape=',img.shape,'; label_mask.shape=',label_mask.shape)
-#        dataAug = DataAug()
-#
-##        label = np.zeros_like(label_mask,dtype=float)
-##        label[label_mask] = 1.0
-##        label = np.unique(label.reshape(-1))
-##        print(label)
-#        
-#        plt.figure(figsize=(15,6))
-#        plt.subplot(2,2,1)
-#        plt.imshow(img[0])
-#        plt.subplot(2,2,2)
-#        plt.imshow(label_mask[0,...,0])
-#        
-#        # test augmentation class
-#        img2, label_mask2 = dataAug.do(img,label_mask)
-#        plt.subplot(2,2,3)
-#        plt.imshow(img2[0])
-#        plt.subplot(2,2,4)
-#        plt.imshow(label_mask2[0,...,0])
-#        
-#        break
-## ========== [END DEBUG]
 
 def optimize(nn_last_layer, correct_label, learning_rate, num_classes, trainable_collection):
     """
@@ -278,7 +193,7 @@ def optimize(nn_last_layer, correct_label, learning_rate, num_classes, trainable
         print('Only update variables in decoder, num_of_vars=',len(trainable_collection))
         train_op = optimizer.minimize(loss_operation, var_list = trainable_collection)
     return logits, train_op, cross_entropy_loss
-#tests.test_optimize(optimize)
+tests.test_optimize(optimize)
 
 
 def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_loss, input_image,
@@ -323,7 +238,7 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
         print("EPOCH {} with {} training time...".format(itr+1,etime - stime))
         print("\t ",loss_per_epoch)
     return loss_list
-#tests.test_train_nn(train_nn)
+tests.test_train_nn(train_nn)
 
 def checkVGGShape(sess, l3out, l4out, l7out, get_batches_fn, input_image, correct_label, keep_prob, learning_rate):
     # check tensor shapes

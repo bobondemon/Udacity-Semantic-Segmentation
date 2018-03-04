@@ -23,24 +23,46 @@ python main.py
 ```
 **Note** If running this in Jupyter Notebook system messages, such as those regarding test status, may appear in the terminal rather than the notebook.
 
-### Submission
-1. Ensure you've passed all the unit tests.
-2. Ensure you pass all points on [the rubric](https://review.udacity.com/#!/rubrics/989/view).
-3. Submit the following in a zip file.
- - `helper.py`
- - `main.py`
- - `project_tests.py`
- - Newest inference images from `runs` folder  (**all images from the most recent run**)
- 
- ### Tips
-- The link for the frozen `VGG16` model is hardcoded into `helper.py`.  The model can be found [here](https://s3-us-west-1.amazonaws.com/udacity-selfdrivingcar/vgg.zip)
-- The model is not vanilla `VGG16`, but a fully convolutional version, which already contains the 1x1 convolutions to replace the fully connected layers. Please see this [forum post](https://discussions.udacity.com/t/here-is-some-advice-and-clarifications-about-the-semantic-segmentation-project/403100/8?u=subodh.malgonde) for more information.  A summary of additional points, follow. 
-- The original FCN-8s was trained in stages. The authors later uploaded a version that was trained all at once to their GitHub repo.  The version in the GitHub repo has one important difference: The outputs of pooling layers 3 and 4 are scaled before they are fed into the 1x1 convolutions.  As a result, some students have found that the model learns much better with the scaling layers included. The model may not converge substantially faster, but may reach a higher IoU and accuracy. 
-- When adding l2-regularization, setting a regularizer in the arguments of the `tf.layers` is not enough. Regularization loss terms must be manually added to your loss function. otherwise regularization is not implemented.
- 
-### Using GitHub and Creating Effective READMEs
-If you are unfamiliar with GitHub , Udacity has a brief [GitHub tutorial](http://blog.udacity.com/2015/06/a-beginners-git-github-tutorial.html) to get you started. Udacity also provides a more detailed free [course on git and GitHub](https://www.udacity.com/course/how-to-use-git-and-github--ud775).
+----
+## [Rubric](https://review.udacity.com/#!/rubrics/1020/view)
 
-To learn about REAMDE files and Markdown, Udacity provides a free [course on READMEs](https://www.udacity.com/courses/ud777), as well. 
+### Build the Neural Network
+1. Does the project load the pretrained vgg model?
+2. Does the project learn the correct features from the images?
+3. Does the project optimize the neural network?
+4. Does the project train the neural network?
+> Four tests, `tests.test_load_vgg(load_vgg, tf)`, `tests.test_layers(layers)`, `tests.test_optimize(optimize)`, and `tests.test_train_nn(train_nn)` are passed correctly. However, If I do data_augmentation in `train_nn` with my own class (this line: `img, label_mask = dataAug.do(img,label_mask)`), `tests.test_train_nn(train_nn)` will got error. I'm not sure what happens but I have verified that my augmentation function is correct and works fine during training.
+> Also, loss is certainly printed while training.
+```python
+in train_nn() function:
+print("EPOCH {} with {} training time...".format(itr+1,etime - stime))
+print("\t ",loss_per_epoch)
+```
 
-GitHub also provides a [tutorial](https://guides.github.com/features/mastering-markdown/) about creating Markdown files.
+### Neural Network Training
+1. Does the project train the model correctly? On average, the model decreases loss over time.
+> <img src="loss.png" alt="loss versus epoch" height="100%" width="100%">
+
+2. Does the project use reasonable hyperparameters?
+> * epoch number = 300
+> * batch_size = 4
+> * Adam learning rate = 0.001, with a decreasing value w.r.t. epoch
+> * l2 regularizations with value 1e-3 in decoder part. (manually add regularization loss with xent loss)
+> * Data augmentation with three types of pre-processing: flip, create shadow, blur
+> * As suggested in Tips, I scaled `vgg_layer3_out` and `vgg_layer4_out` in decoder part. It really produces more accurate images.
+> * VGG parameters are not updated during training. Pass variables in decoder part to optimizer: `train_op = optimizer.minimize(loss_operation, var_list = trainable_collection)`
+```python
+with tf.variable_scope('decoder'):
+    layer_output = layers(l3out, l4out, l7out, num_classes)
+vars_decoder = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES,scope='decoder')
+# We only update variables in this collection, vars_decoder, which will pass to optimizer later
+```
+
+3. Does the project correctly label the road?
+> Since we don't have the ground truth for test images. We can only measure by eye. These are the results:
+<img src="pic1.png" alt="loss versus epoch" height="100%" width="100%">
+<img src="pic2.png" alt="loss versus epoch" height="100%" width="100%">
+<img src="pic3.png" alt="loss versus epoch" height="100%" width="100%">
+<img src="pic4.png" alt="loss versus epoch" height="100%" width="100%">
+<img src="pic5.png" alt="loss versus epoch" height="100%" width="100%">
+<img src="pic6.png" alt="loss versus epoch" height="100%" width="100%">

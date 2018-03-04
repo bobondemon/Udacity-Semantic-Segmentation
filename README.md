@@ -41,7 +41,7 @@ print("\t ",loss_per_epoch)
 
 ### Neural Network Training
 1. Does the project train the model correctly? On average, the model decreases loss over time.
-> <img src="loss.png" alt="loss versus epoch" height="100%" width="100%">
+> <img src="loss.png" alt="loss versus epoch" height="60%" width="60%">
 
 2. Does the project use reasonable hyperparameters?
 > * epoch number = 300
